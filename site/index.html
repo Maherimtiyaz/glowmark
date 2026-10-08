@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>glowmark ✨ — Markdown into beautiful pages</title>
+<meta name="description" content="glowmark turns any Markdown file into a polished, standalone HTML page — one command, zero config.">
+<meta property="og:title" content="glowmark — Markdown into beautiful pages">
+<meta property="og:description" content="One command. Zero config. A page worth sharing.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+<script>
+  (function () {
+    try {
+      var pref = localStorage.getItem("glowmark-theme");
+      if (pref) document.documentElement.className = "theme-" + pref;
+    } catch (e) {}
+  })();
+</script>
+<style>
+/* theme tokens ------------------------------------------------------- */
+:root {
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --accent: #7c3aed;
+  --accent2: #ec4899;
+  --radius: 14px;
+  --max: 68rem;
+}
+.theme-auto { color-scheme: light dark; --bg: #ffffff; --bg-soft: #f6f8fa; --bg-card: #ffffff; --text: #1f2328; --text-soft: #59636e; --heading: #111827; --border: #d8dee4; --accent-soft: rgba(124, 58, 237, .1); --shadow: 0 1px 3px rgba(0,0,0,.06), 0 12px 32px rgba(0,0,0,.07); --term-bg: #0d1117; --term-text: #e6edf3; }
+@media (prefers-color-scheme: dark) {
+  .theme-auto { --bg: #0d1117; --bg-soft: #161b22; --bg-card: #11161d; --text: #e6edf3; --text-soft: #9198a1; --heading: #f0f6fc; --border: #30363d; --accent-soft: rgba(167,139,250,.15); --shadow: 0 1px 3px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.4); --term-bg: #010409; --term-text: #e6edf3; }
+}
+.theme-light { color-scheme: light; --bg: #ffffff; --bg-soft: #f6f8fa; --bg-card: #ffffff; --text: #1f2328; --text-soft: #59636e; --heading: #111827; --border: #d8dee4; --accent-soft: rgba(124, 58, 237, .1); --shadow: 0 1px 3px rgba(0,0,0,.06), 0 12px 32px rgba(0,0,0,.07); --term-bg: #0d1117; --term-text: #e6edf3; }
+.theme-dark { color-scheme: dark; --bg: #0d1117; --bg-soft: #161b22; --bg-card: #11161d; --text: #e6edf3; --text-soft: #9198a1; --heading: #f0f6fc; --border: #30363d; --accent-soft: rgba(167,139,250,.15); --shadow: 0 1px 3px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.4); --term-bg: #010409; --term-text: #e6edf3; }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; }
+
+/* progress ------------------------------------------------------------ */
+.progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 90; opacity: 0; transition: opacity .3s ease; }
+.progress.on { opacity: 1; }
+.progress i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent)); background-size: 200% 100%; animation: shimmer 2.5s linear infinite; border-radius: 0 3px 3px 0; }
+@keyframes shimmer { to { background-position: 200% 50%; } }
+
+/* nav ------------------------------------------------------------------ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 80;
+  display: flex; align-items: center; gap: 1.5rem;
+  padding: .85rem max(1.5rem, calc((100vw - var(--max)) / 2));
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color .3s ease;
+}
+.nav.scrolled { border-bottom-color: var(--border); }
+.brand { font-weight: 800; font-size: 1.1rem; text-decoration: none; letter-spacing: -.02em; display: flex; align-items: center; gap: .45rem; }
+.brand .spark { display: inline-block; animation: spin-slow 9s linear infinite; }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.nav-links { display: flex; gap: 1.4rem; margin-left: auto; font-size: .92rem; }
+.nav-links a { color: var(--text-soft); text-decoration: none; position: relative; transition: color .2s ease; }
+.nav-links a::after { content: ""; position: absolute; left: 0; bottom: -4px; height: 2px; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width .3s cubic-bezier(.22,1,.36,1); }
+.nav-links a:hover { color: var(--heading); }
+.nav-links a:hover::after { width: 100%; }
+.theme-btn {
+  border: 1px solid var(--border); background: var(--bg-soft); color: var(--text);
+  border-radius: 999px; cursor: pointer; font-size: .95rem; line-height: 1;
+  padding: .5rem .7rem; transition: transform .25s cubic-bezier(.34,1.5,.5,1), border-color .2s;
+}
+.theme-btn:hover { transform: translateY(-2px) scale(1.06); border-color: var(--accent); }
+.theme-btn:active { transform: scale(.93); }
+.theme-btn .moon { display: none; }
+.theme-dark .theme-btn .sun, .theme-auto .theme-btn .moon { display: none; }
+.theme-dark .theme-btn .moon { display: inline; }
+@media (prefers-color-scheme: dark) { .theme-auto .theme-btn .sun { display: none; } .theme-auto .theme-btn .moon { display: inline; } }
+
+/* layout --------------------------------------------------------------- */
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+/* hero ------------------------------------------------------------------ */
+.hero { padding: 9.5rem 0 4.5rem; position: relative; }
+.hero::before {
+  content: ""; position: absolute; inset: -10% -50% auto; height: 70%;
+  background:
+    radial-gradient(45% 55% at 25% 30%, var(--accent-soft) 0%, transparent 70%),
+    radial-gradient(40% 50% at 75% 20%, rgba(236,72,153,.10) 0%, transparent 70%);
+  pointer-events: none; filter: blur(6px);
+}
+.hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 3.5rem; align-items: center; position: relative; }
+.pill {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .8rem; font-weight: 600; letter-spacing: .04em;
+  border: 1px solid var(--border); background: var(--bg-soft);
+  padding: .35rem .8rem; border-radius: 999px; color: var(--text-soft);
+  margin-bottom: 1.3rem;
+}
+.pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,.5); animation: pulse 2s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+h1 {
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  line-height: 1.06; letter-spacing: -.03em; margin: 0 0 1.1rem;
+  background: linear-gradient(120deg, var(--heading) 15%, var(--accent) 42%, var(--heading) 65%, var(--accent2) 95%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  animation: sweep 7s ease-in-out infinite;
+}
+@keyframes sweep { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.lede { font-size: 1.15rem; color: var(--text-soft); margin: 0 0 1.8rem; max-width: 34rem; }
+.lede strong { color: var(--heading); }
+
+.cmd {
+  display: flex; align-items: center; gap: .7rem;
+  font-family: var(--font-mono); font-size: .95rem;
+  background: var(--term-bg); color: var(--term-text);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: .8rem 1rem; max-width: 26rem; margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.cmd .prompt { color: #22c55e; }
+.cmd code { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.copy {
+  border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
+  color: #cbd5e1; font-size: .72rem; border-radius: 7px; padding: .3rem .6rem;
+  cursor: pointer; transition: transform .25s cubic-bezier(.34,1.6,.5,1), color .2s, border-color .2s;
+  font-family: var(--font-body);
+}
+.copy:hover { color: #fff; border-color: var(--accent); transform: scale(1.07); }
+.copy.copied { color: #4ade80; border-color: #4ade80; animation: pop .4s cubic-bezier(.34,1.6,.4,1); }
+@keyframes pop { 55% { transform: scale(1.15); } }
+
+.cta-row { display: flex; gap: .9rem; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .95rem; font-weight: 600; text-decoration: none;
+  padding: .75rem 1.4rem; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg-soft); color: var(--text);
+  transition: transform .25s cubic-bezier(.34,1.5,.5,1), box-shadow .25s, border-color .2s;
+}
+.btn:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 6px 18px var(--accent-soft); }
+.btn:active { transform: translateY(0) scale(.97); }
+.btn.primary {
+  background: linear-gradient(120deg, var(--accent), var(--accent2));
+  border: none; color: #fff;
+  box-shadow: 0 6px 20px rgba(124,58,237,.35);
+}
+.btn.primary:hover { box-shadow: 0 10px 28px rgba(124,58,237,.45); transform: translateY(-3px); }
+
+/* terminal --------------------------------------------------------------- */
+.terminal {
+  background: var(--term-bg); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.28), 0 0 0 1px rgba(255,255,255,.03) inset;
+  transform: perspective(1200px) rotateY(-4deg) rotateX(1.5deg);
+  transition: transform .5s cubic-bezier(.22,1,.36,1);
+}
+.terminal:hover { transform: perspective(1200deg) rotateY(0) rotateX(0) translateY(-4px); }
+.term-bar { display: flex; align-items: center; gap: .45rem; padding: .7rem .9rem; background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.07); }
+.term-bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+.term-bar i:nth-child(1) { background: #ff5f57; }
+.term-bar i:nth-child(2) { background: #febc2e; }
+.term-bar i:nth-child(3) { background: #28c840; }
+.term-bar span { margin-left: .5rem; font-size: .74rem; color: #8b949e; font-family: var(--font-mono); }
+.term-body {
+  font-family: var(--font-mono); font-size: .84rem; line-height: 1.75;
+  color: var(--term-text); padding: 1.1rem 1.2rem 1.4rem; min-height: 15.5rem;
+  white-space: pre-wrap;
+}
+.term-body .ps1 { color: #22c55e; }
+.term-body .flag { color: #7dd3fc; }
+.term-body .dim { color: #8b949e; }
+.term-body .ok { color: #4ade80; }
+.term-body .url { color: #a78bfa; }
+.term-body .cursor { display: inline-block; width: 8px; height: 1.05em; background: var(--accent); vertical-align: text-bottom; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* sections ---------------------------------------------------------------- */
+section { padding: 4.5rem 0; }
+.kicker { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin: 0 0 .6rem; }
+h2 { font-size: clamp(1.7rem, 3.6vw, 2.3rem); letter-spacing: -.02em; margin: 0 0 1rem; color: var(--heading); line-height: 1.2; }
+.sub { color: var(--text-soft); max-width: 42rem; margin: 0 0 2.5rem; }
+
+/* before / after ----------------------------------------------------------- */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; align-items: stretch; }
+.pane { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg-card); box-shadow: var(--shadow); }
+.pane-label { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: .6rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-soft); background: var(--bg-soft); display: flex; justify-content: space-between; }
+.pane-label .tag { color: var(--accent); }
+.raw { font-family: var(--font-mono); font-size: .8rem; line-height: 1.7; padding: 1.1rem 1.2rem; margin: 0; color: var(--text-soft); overflow-x: auto; white-space: pre-wrap; }
+.raw .h { color: var(--accent); font-weight: 700; }
+.raw .b { color: var(--heading); font-weight: 700; }
+.raw .fence { color: #22c55e; }
+.raw .code { color: #ec4899; }
+.pretty { padding: 1.4rem 1.5rem; }
+.pretty h3 { margin: 0 0 .5rem; font-size: 1.35rem; color: var(--heading); letter-spacing: -.01em; }
+.pretty p { margin: .5rem 0; font-size: .93rem; color: var(--text); }
+.pretty .meta { font-size: .75rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .8rem; }
+.pretty pre { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; padding: .8rem .95rem; font-family: var(--font-mono); font-size: .78rem; overflow-x: auto; margin: .9rem 0; color: var(--text); }
+.pretty pre .k { color: var(--accent); }
+.pretty pre .s { color: #16a34a; }
+.pretty .check { color: #16a34a; }
+.arrow-badge {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  background: linear-gradient(120deg, var(--accent), var(--accent2)); color: #fff;
+  font-size: 1.1rem; box-shadow: 0 6px 18px rgba(124,58,237,.4); z-index: 5;
+  animation: bounce-x 2.4s ease-in-out infinite;
+}
+@keyframes bounce-x { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.12); } }
+.split-wrap { position: relative; }
+
+/* features ------------------------------------------------------------------- */
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr)); gap: 1.2rem; }
+.card {
+  border: 1px solid var(--border); background: var(--bg-card);
+  border-radius: var(--radius); padding: 1.35rem 1.3rem;
+  transition: transform .3s cubic-bezier(.22,1,.36,1), border-color .3s, box-shadow .3s;
+  position: relative; overflow: hidden;
+}
+.card::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(60% 60% at var(--mx,50%) var(--my,0%), var(--accent-soft), transparent 70%);
+  opacity: 0; transition: opacity .35s ease; pointer-events: none;
+}
+.card:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); box-shadow: var(--shadow); }
+.card:hover::after { opacity: 1; }
+.card .ico { font-size: 1.5rem; display: block; margin-bottom: .7rem; }
+.card h3 { margin: 0 0 .35rem; font-size: 1.02rem; color: var(--heading); letter-spacing: -.01em; }
+.card p { margin: 0; font-size: .89rem; color: var(--text-soft); }
+
+/* steps ---------------------------------------------------------------------- */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; counter-reset: step; }
+.step { position: relative; padding: 1.5rem 1.3rem 1.3rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); }
+.step::before {
+  counter-increment: step; content: counter(step);
+  position: absolute; top: -1.05rem; left: 1.2rem;
+  width: 2.1rem; height: 2.1rem; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; font-size: .95rem; color: #fff;
+  background: linear-gradient(120deg, var(--accent), var(--accent2));
+  box-shadow: 0 4px 14px rgba(124,58,237,.4);
+}
+.step h3 { margin: .3rem 0 .4rem; font-size: 1.02rem; color: var(--heading); }
+.step p { margin: 0; font-size: .89rem; color: var(--text-soft); }
+.step code { font-family: var(--font-mono); font-size: .84em; background: var(--bg-soft); border: 1px solid var(--border); padding: .1em .4em; border-radius: 6px; }
+
+/* stats ------------------------------------------------------------------- */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center; }
+.stat b { display: block; font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing: -.02em; background: linear-gradient(120deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.stat span { font-size: .82rem; color: var(--text-soft); }
+
+/* install cta ------------------------------------------------------------------ */
+.install {
+  border: 1px solid var(--border); border-radius: 22px;
+  background:
+    radial-gradient(50% 80% at 15% 0%, var(--accent-soft), transparent 70%),
+    radial-gradient(50% 80% at 85% 100%, rgba(236,72,153,.10), transparent 70%),
+    var(--bg-card);
+  padding: 3.5rem 2rem; text-align: center;
+  box-shadow: var(--shadow);
+}
+.install h2 { margin-bottom: .6rem; }
+.install .sub { margin: 0 auto 1.8rem; }
+.install .cmd { margin: 0 auto 1.4rem; }
+
+/* footer --------------------------------------------------------------------- */
+footer { border-top: 1px solid var(--border); padding: 2.2rem 0; margin-top: 4rem; font-size: .86rem; color: var(--text-soft); }
+.foot { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.foot a { color: var(--accent); text-decoration: none; }
+.foot a:hover { text-decoration: underline; }
+
+/* live demo ---------------------------------------------------------------- */
+.demo-input {
+  width: 100%;
+  min-height: 27rem;
+  border: none;
+  outline: none;
+  resize: vertical;
+  padding: 1.2rem 1.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  background: var(--bg);
+  color: var(--text);
+  tab-size: 2;
+}
+.demo-content {
+  min-height: 27rem;
+  max-height: 27rem;
+  overflow-y: auto;
+  font-size: 0.95rem;
+}
+.demo-content h1 { font-size: 1.55rem; margin: 0 0 0.6rem; color: var(--heading); letter-spacing: -0.02em; }
+.demo-content h2 { font-size: 1.2rem; margin: 1.3rem 0 0.5rem; color: var(--heading); padding-bottom: 0.25rem; border-bottom: 1px solid var(--border); }
+.demo-content h3 { font-size: 1.05rem; margin: 1.1rem 0 0.4rem; color: var(--heading); }
+.demo-content p { margin: 0.6rem 0; }
+.demo-content a { color: var(--accent); text-decoration: none; border-bottom: 1.5px solid var(--accent-soft); }
+.demo-content a:hover { border-bottom-color: var(--accent); }
+.demo-content ul, .demo-content ol { padding-left: 1.3rem; margin: 0.6rem 0; }
+.demo-content li { margin: 0.25rem 0; }
+.demo-content li::marker { color: var(--accent); }
+.demo-content code {
+  font-family: var(--font-mono); font-size: 0.85em;
+  background: var(--bg-soft); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.1em 0.4em;
+}
+.demo-content pre {
+  background: var(--bg-soft); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.9rem 1rem; overflow-x: auto;
+  margin: 0.9rem 0; box-shadow: none;
+}
+.demo-content pre code { background: none; border: none; padding: 0; font-size: 0.8rem; }
+.demo-content pre .k { color: var(--accent); font-weight: 600; }
+.demo-content pre .s { color: #16a34a; }
+.demo-content pre .c { color: var(--text-soft); font-style: italic; }
+.demo-content pre .n { color: #ec4899; }
+.demo-content table { border-collapse: collapse; width: 100%; margin: 0.9rem 0; font-size: 0.88rem; display: block; overflow-x: auto; }
+.demo-content th, .demo-content td { border: 1px solid var(--border); padding: 0.45rem 0.75rem; text-align: left; }
+.demo-content th { background: var(--bg-soft); color: var(--heading); }
+.demo-content blockquote {
+  margin: 0.9rem 0; padding: 0.1rem 1rem;
+  border-left: 4px solid var(--accent); background: var(--accent-soft);
+  border-radius: 0 10px 10px 0;
+}
+.demo-content .adm {
+  margin: 0.9rem 0; border: 1px solid var(--border);
+  border-left: 4px solid #16a34a; border-radius: 0 10px 10px 0;
+  background: var(--bg-soft); padding: 0.7rem 0.95rem;
+}
+.demo-content .adm b { display: block; color: var(--heading); font-size: 0.85rem; margin-bottom: 0.2rem; }
+.demo-content input[type="checkbox"] { accent-color: var(--accent); margin-right: 0.45rem; }
+.demo-content hr { border: none; border-top: 1px solid var(--border); margin: 1.4rem 0; }
+.demo-content img { max-width: 100%; border-radius: 10px; }
+.demo-content .pe { color: var(--text-soft); font-style: italic; }
+
+/* reveal animations ------------------------------------------------------------ */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .65s cubic-bezier(.22,1,.36,1), transform .65s cubic-bezier(.22,1,.36,1); transition-delay: var(--d, 0s); }
+.reveal.in { opacity: 1; transform: none; }
+.hero-anim { animation: fade-up .8s cubic-bezier(.22,1,.36,1) both; }
+.hero-anim:nth-child(1) { animation-delay: .05s; }
+.d1 { animation-delay: .12s; } .d2 { animation-delay: .24s; } .d3 { animation-delay: .36s; } .d4 { animation-delay: .48s; }
+@keyframes fade-up { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+
+/* theme view transition ---------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+  ::view-transition-old(root) { animation: vt-out .25s ease both; }
+  ::view-transition-new(root) { animation: vt-in .45s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes vt-out { to { opacity: 0; filter: blur(4px); } }
+  @keyframes vt-in { from { clip-path: circle(0% at var(--vx,95%) var(--vy,5%)); } to { clip-path: circle(150% at var(--vx,95%) var(--vy,5%)); } }
+}
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+  transition: background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, fill .3s ease !important;
+}
+
+/* responsive --------------------------------------------------------------------- */
+@media (max-width: 940px) {
+  .hero-grid, .split, .steps { grid-template-columns: 1fr; }
+  .terminal { transform: none; }
+  .hero { padding-top: 7.5rem; }
+  .nav-links { display: none; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) { body { font-size: 16px; } .install { padding: 2.5rem 1.2rem; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+@media print { .nav, .progress, .terminal, .copy { display: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"><i id="progressBar"></i></div>
+
+<nav class="nav" id="nav">
+  <a class="brand" href="#top"><span class="spark">✨</span> glowmark</a>
+  <div class="nav-links">
+    <a href="#compare">Compare</a>
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#install">Install</a>
+  </div>
+  <button class="theme-btn" id="themeBtn" aria-label="Toggle theme"><span class="sun">☀️</span><span class="moon">🌙</span></button>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="pill hero-anim"><span class="dot"></span> one command · zero config</span>
+      <h1 class="hero-anim d1">Markdown in.<br>Beautiful pages out.</h1>
+      <p class="lede hero-anim d2">glowmark turns any <strong>.md</strong> file into a polished, standalone HTML page —
+        syntax-highlighted, themed, with a live-reload preview server. Nothing to configure, nothing to share but one file.</p>
+      <div class="cmd hero-anim d3">
+        <span class="prompt">$</span>
+        <code id="installCmd">pip install glowmark</code>
+        <button class="copy" data-copy="pip install glowmark">copy</button>
+      </div>
+      <div class="cta-row hero-anim d4">
+        <a class="btn primary" href="#install">Get started →</a>
+        <a class="btn" href="#compare">See the magic</a>
+      </div>
+    </div>
+    <div class="hero-anim d3">
+      <div class="terminal" aria-hidden="true">
+        <div class="term-bar"><i></i><i></i><i></i><span>glowmark — zsh</span></div>
+        <div class="term-body" id="term"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="demo">
+  <div class="wrap">
+    <p class="kicker reveal">Live demo — no install</p>
+    <h2 class="reveal">Try it right here. Really.</h2>
+    <p class="sub reveal">Type any markdown on the left — the exact glowmark rendering appears on the right,
+      computed entirely in your browser. Nothing is uploaded.</p>
+    <div class="split-wrap reveal">
+      <div class="split">
+        <div class="pane">
+          <div class="pane-label"><span>markdown</span><span class="tag">edit me ↓</span></div>
+          <textarea id="demoMd" class="demo-input" spellcheck="false" aria-label="Markdown input"></textarea>
+        </div>
+        <div class="pane">
+          <div class="pane-label"><span>✨ glowmark output</span><span class="tag" id="demoStats">…</span></div>
+          <div class="pretty demo-content" id="demoOut"></div>
+        </div>
+      </div>
+      <div class="arrow-badge">✨</div>
+    </div>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="wrap">
+    <p class="kicker reveal">The one trick</p>
+    <h2 class="reveal">Same file. Ten seconds. Night and day.</h2>
+    <p class="sub reveal">Raw text nobody reads → a page with a gradient hero, scroll-spy table of contents,
+      highlighted code, copy buttons, and light/dark themes.</p>
+    <div class="split-wrap reveal">
+      <div class="split">
+        <div class="pane">
+          <div class="pane-label"><span>README.md</span><span class="tag">raw</span></div>
+<pre class="raw"><span class="h"># Welcome to glowmark</span>
+
+glowmark turns <span class="b">**one markdown file**</span> into a
+polished, standalone HTML page.
+
+<span class="fence">```python</span>
+<span class="code">print(Glow("glowmark").shine())</span>
+<span class="fence">```</span>
+
+<span class="h">## Why?</span>
+- [x] Parse markdown
+- [x] Highlight code
+- [ ] Take over the world</pre>
+        </div>
+        <div class="pane">
+          <div class="pane-label"><span>glowmark README.md</span><span class="tag">✨ rendered</span></div>
+          <div class="pretty">
+            <div class="meta">glowmark · 1 min read · 24 words</div>
+            <h3>Welcome to glowmark</h3>
+            <p>glowmark turns <strong>one markdown file</strong> into a polished, standalone HTML page.</p>
+            <pre><span class="k">print</span>(Glow(<span class="s">"glowmark"</span>).shine())</pre>
+            <p><strong>Why?</strong></p>
+            <p><span class="check">✓</span> Parse markdown<br>
+               <span class="check">✓</span> Highlight code<br>
+               <span class="check">✓</span> Take over the world</p>
+          </div>
+        </div>
+      </div>
+      <div class="arrow-badge">→</div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <p class="kicker reveal">Features</p>
+    <h2 class="reveal">Everything you'd build yourself. Already done.</h2>
+    <p class="sub reveal">One focused tool that does exactly one thing — exceptionally well.</p>
+    <div class="features" id="featureGrid">
+      <div class="card reveal"><span class="ico">⚡</span><h3>Instant preview</h3><p><code>glowmark doc.md</code> renders and opens in your browser. No server, no wait.</p></div>
+      <div class="card reveal"><span class="ico">🔄</span><h3>Live reload</h3><p><code>--serve</code> watches your file and refreshes the browser the moment you save.</p></div>
+      <div class="card reveal"><span class="ico">📦</span><h3>One-file output</h3><p>CSS and highlighting fully inlined. Works offline, email it, host it anywhere.</p></div>
+      <div class="card reveal"><span class="ico">🎨</span><h3>Light &amp; dark</h3><p>Auto-detect, manual toggle, circular theme transition. Choice is persisted.</p></div>
+      <div class="card reveal"><span class="ico">🧭</span><h3>Scroll-spy TOC</h3><p>A sliding indicator follows you through the document as you read.</p></div>
+      <div class="card reveal"><span class="ico">🔔</span><h3>GitHub alerts</h3><p><code>&gt; [!NOTE]</code>, tips and warnings render as native admonition cards.</p></div>
+      <div class="card reveal"><span class="ico">📊</span><h3>Math &amp; diagrams</h3><p>LaTeX via KaTeX and mermaid charts load automatically when detected.</p></div>
+      <div class="card reveal"><span class="ico">🧾</span><h3>Front matter</h3><p>Title, author and date become a hero header — with reading time for free.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="kicker reveal">How it works</p>
+    <h2 class="reveal">Three steps. That's the whole manual.</h2>
+    <div class="steps" style="margin-top:2.5rem">
+      <div class="step reveal"><h3>Write or point</h3><p>Any Markdown file works — READMEs, notes, docs. Or pipe stdin: <code>cat a.md | glowmark -</code></p></div>
+      <div class="step reveal"><h3>Run one command</h3><p><code>glowmark doc.md</code> for a quick look, <code>glowmark -s doc.md</code> while writing.</p></div>
+      <div class="step reveal"><h3>Share the file</h3><p><code>--out page.html</code> writes a standalone page. Send it, host it, done.</p></div>
+    </div>
+    <div class="stats reveal" style="margin-top:3.5rem">
+      <div class="stat"><b>1</b><span>command to render</span></div>
+      <div class="stat"><b>0</b><span>config files</span></div>
+      <div class="stat"><b>2</b><span>dependencies</span></div>
+      <div class="stat"><b>100%</b><span>offline-ready output</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="install reveal">
+      <p class="kicker">Install</p>
+      <h2>Ready in one line.</h2>
+      <p class="sub">Python 3.10+, no Node, no build step, no account.</p>
+      <div class="cmd">
+        <span class="prompt">$</span>
+        <code>pip install glowmark</code>
+        <button class="copy" data-copy="pip install glowmark">copy</button>
+      </div>
+      <div class="cmd" style="max-width:32rem">
+        <span class="prompt">$</span>
+        <code>glowmark --serve README.md</code>
+        <button class="copy" data-copy="glowmark --serve README.md">copy</button>
+      </div>
+      <div class="cta-row" style="justify-content:center; margin-top:1.6rem">
+        <a class="btn primary" href="#top">Back to top ↑</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <span><strong>✨ glowmark</strong> — Markdown into beautiful pages.</span>
+    <span>MIT licensed · built with Python + one HTML file</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // theme toggle ---------------------------------------------------------
+  var themeBtn = document.getElementById("themeBtn");
+  function applyTheme(next) {
+    root.className = "theme-" + next;
+    try { localStorage.setItem("glowmark-theme", next); } catch (e) {}
+  }
+  themeBtn.addEventListener("click", function () {
+    var next = root.className.replace("theme-", "") === "light" ? "dark" : "light";
+    if (!reduced && document.startViewTransition) {
+      var r = themeBtn.getBoundingClientRect();
+      root.style.setProperty("--vx", r.left + r.width / 2 + "px");
+      root.style.setProperty("--vy", r.top + r.height / 2 + "px");
+      try {
+        document.startViewTransition(function () { applyTheme(next); }).finished.finally(function () {
+          root.style.removeProperty("--vx"); root.style.removeProperty("--vy");
+        });
+        return;
+      } catch (e) {}
+    }
+    root.classList.add("theme-anim");
+    applyTheme(next);
+    setTimeout(function () { root.classList.remove("theme-anim"); }, 350);
+  });
+
+  // progress + nav shadow --------------------------------------------------
+  var progress = document.getElementById("progress");
+  var bar = document.getElementById("progressBar");
+  var nav = document.getElementById("nav");
+  var ticking = false;
+  function onScroll() {
+    var y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+    var pct = max > 0 ? Math.min(100, y / max * 100) : 0;
+    bar.style.width = pct + "%";
+    progress.classList.toggle("on", pct > 0.5);
+    nav.classList.toggle("scrolled", y > 8);
+    ticking = false;
+  }
+  addEventListener("scroll", function () {
+    if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+  }, { passive: true });
+  onScroll();
+
+  // reveal on scroll ---------------------------------------------------------
+  if ("IntersectionObserver" in window && !reduced) {
+    var io = new IntersectionObserver(function (entries) {
+      var n = 0;
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.style.setProperty("--d", Math.min(n * 70, 280) + "ms");
+        e.target.classList.add("in");
+        io.unobserve(e.target);
+        n++;
+      });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+    document.querySelectorAll(".reveal").forEach(function (el) { io.observe(el); });
+  } else {
+    document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("in"); });
+  }
+
+  // card cursor glow ----------------------------------------------------------
+  document.querySelectorAll(".card").forEach(function (card) {
+    card.addEventListener("pointermove", function (e) {
+      var r = card.getBoundingClientRect();
+      card.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100) + "%");
+      card.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100) + "%");
+    });
+  });
+
+  // copy buttons ---------------------------------------------------------------
+  document.querySelectorAll(".copy").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var text = btn.getAttribute("data-copy");
+      var done = function () {
+        btn.classList.add("copied");
+        btn.textContent = "copied!";
+        setTimeout(function () { btn.classList.remove("copied"); btn.textContent = "copy"; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, done);
+      } else { done(); }
+    });
+  });
+
+  // terminal typing loop ---------------------------------------------------------
+  var term = document.getElementById("term");
+  var scenes = [
+    [
+      { t: '<span class="ps1">$</span> glowmark README.md', d: 42 },
+      { t: '\n<span class="dim">→ opened preview</span> <span class="ok">✓</span> <span class="dim">37,317 bytes</span>', d: 8, pause: 1400 }
+    ],
+    [
+      { t: '<span class="ps1">$</span> glowmark <span class="flag">--serve</span> docs/guide.md', d: 42 },
+      { t: '\n<span class="dim">serving</span> <span class="url">http://127.0.0.1:7654</span> <span class="ok">✓</span> <span class="dim">live reload on</span>', d: 8, pause: 1600 },
+      { t: '\n<span class="dim">edit detected → browser refreshed</span> <span class="ok">✓</span>', d: 14, pause: 1600 }
+    ],
+    [
+      { t: '<span class="ps1">$</span> glowmark notes.md <span class="flag">--out</span> notes.html', d: 42 },
+      { t: '\n<span class="ok">wrote</span> notes.html <span class="dim">(49,122 bytes) — works offline</span>', d: 8, pause: 1800 }
+    ]
+  ];
+  var sceneIdx = 0;
+
+  function typeScene(scene, cb) {
+    var html = "", si = 0;
+    function nextLine() {
+      if (si >= scene.length) { cb(); return; }
+      var item = scene[si++];
+      typeHtml(item.t, item.d, function () {
+        html += item.t;
+        setTimeout(nextLine, item.pause || 350);
+      });
+    }
+    function typeHtml(full, speed, done) {
+      // strip tags for typing, then swap in the final html when complete
+      var plain = full.replace(/<[^>]+>/g, "");
+      var i = 0;
+      (function tick() {
+        if (i <= plain.length) {
+          term.innerHTML = html + escapePartial(full, plain, i) + '<span class="cursor"></span>';
+          i++;
+          setTimeout(tick, reduced ? 0 : speed);
+        } else {
+          term.innerHTML = html + full;
+          done();
+        }
+      })();
+    }
+    nextLine();
+  }
+
+  // reveal the tagged portions of `full` progressively based on visible plain length
+  function escapePartial(full, plain, n) {
+    var out = "", count = 0, i = 0;
+    while (i < full.length && count < n) {
+      if (full[i] === "<") {
+        var close = full.indexOf(">", i);
+        out += full.slice(i, close + 1);
+        i = close + 1;
+      } else {
+        out += full[i] === "&" ? full.slice(i, full.indexOf(";", i) + 1) : full[i];
+        if (full[i] === "&") i = full.indexOf(";", i) + 1; else i++;
+        count++;
+      }
+    }
+    // append any trailing tags so markup stays balanced
+    while (i < full.length && full[i] === "<") {
+      var c = full.indexOf(">", i);
+      out += full.slice(i, c + 1);
+      i = c + 1;
+    }
+    return out;
+  }
+
+  function loop() {
+    typeScene(scenes[sceneIdx], function () {
+      sceneIdx = (sceneIdx + 1) % scenes.length;
+      setTimeout(function () {
+        term.style.opacity = "0";
+        setTimeout(function () { term.innerHTML = ""; term.style.opacity = "1"; loop(); }, 350);
+      }, 900);
+    });
+  }
+  term.style.transition = "opacity .3s ease";
+  if (reduced) {
+    term.innerHTML = scenes[1].map(function (s) { return s.t; }).join("");
+  } else {
+    setTimeout(loop, 700);
+  }
+})();
+</script>
+<script>
+// live markdown demo (client-side renderer) -------------------------------
+(function () {
+  "use strict";
+  var input = document.getElementById("demoMd");
+  var out = document.getElementById("demoOut");
+  var statsEl = document.getElementById("demoStats");
+  if (!input || !out) return;
+
+  var SAMPLE = [
+    "# Hello, glowmark ✨",
+    "",
+    "Paste **any markdown** here — this preview uses the same styles as the CLI output, rendered *entirely in your browser*.",
+    "",
+    "## Why people love it",
+    "",
+    "- ⚡ Instant preview",
+    "- 🎨 Light & dark themes",
+    "- 📦 One-file output, works offline",
+    "",
+    "> [!TIP]",
+    "> Edit this text below, or paste your own README.",
+    "",
+    "| Command | What it does |",
+    "| ------- | ------------ |",
+    "| `glowmark doc.md` | quick preview |",
+    "| `glowmark -s doc.md` | live-reload server |",
+    "| `glowmark doc.md -o x.html` | standalone file |",
+    "",
+    "```python",
+    "from glowmark import render",
+    'page = render("# Hi")  # beautiful, instantly',
+    "```",
+    "",
+    "- [x] Rendered client-side",
+    "- [ ] Try it yourself",
+    "",
+    "---",
+    "",
+    "Reading time: *automatically calculated* ✍️",
+  ].join("\n");
+
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function highlight(code) {
+    var KW =
+      "\\b(function|return|const|let|var|if|else|for|while|import|from|export|default|class|new|await|async|def|lambda|print|True|False|None|true|false|null|this|try|except|catch|raise|with|as|in|not|and|or|is|pass|yield|goto|end|do|then)\\b";
+    var re = new RegExp(
+      "(#[^\\n]*|\\/\\/[^\\n]*|--[^\\n]*)" + // comments
+        '|("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'|`(?:[^`\\\\]|\\\\.)*`)' + // strings
+        "|\\b(\\d+(?:\\.\\d+)?)\\b" + // numbers
+        "|" + KW,
+      "g"
+    );
+    return esc(code).replace(re, function (m, com, str, num, kw) {
+      if (com) return '<span class="c">' + com + "</span>";
+      if (str) return '<span class="s">' + str + "</span>";
+      if (num) return '<span class="n">' + num + "</span>";
+      if (kw) return '<span class="k">' + kw + "</span>";
+      return m;
+    });
+  }
+
+  function inline(text) {
+    var t = esc(text);
+    t = t.replace(/`([^`]+)`/g, function (m, c) {
+      return "<code>" + c + "</code>";
+    });
+    t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img alt="$1" src="$2">');
+    t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+    t = t.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+    t = t.replace(/~~([^~]+)~~/g, "<del>$1</del>");
+    return t;
+  }
+
+  function render(md) {
+    var lines = md.replace(/\r\n?/g, "\n").split("\n");
+    var html = [], i = 0;
+
+    function isInlineStart(l) {
+      return /^(#{1,6}\s|>|\s*[-*+]\s|\s*\d+\.\s|```|---\s*$|\s*$)/.test(l);
+    }
+
+    while (i < lines.length) {
+      var line = lines[i];
+
+      // fenced code
+      var fence = line.match(/^\s*```(\w*)\s*$/);
+      if (fence) {
+        var buf = [];
+        i++;
+        while (i < lines.length && !/^\s*```\s*$/.test(lines[i])) {
+          buf.push(lines[i]);
+          i++;
+        }
+        i++;
+        html.push("<pre><code>" + highlight(buf.join("\n")) + "</code></pre>");
+        continue;
+      }
+
+      // heading
+      var h = line.match(/^(#{1,6})\s+(.*)$/);
+      if (h) {
+        var lvl = h[1].length;
+        html.push("<h" + lvl + ">" + inline(h[2]) + "</h" + lvl + ">");
+        i++;
+        continue;
+      }
+
+      // hr
+      if (/^\s*([-*_])\s*(\1\s*){2,}$/.test(line)) {
+        html.push("<hr>");
+        i++;
+        continue;
+      }
+
+      // blockquote / alert
+      if (/^\s*>/.test(line)) {
+        var q = [];
+        while (i < lines.length && /^\s*>/.test(lines[i])) {
+          q.push(lines[i].replace(/^\s*>\s?/, ""));
+          i++;
+        }
+        var alert = q[0] && q[0].match(/^\[!(\w+)\]\s*$/i);
+        if (alert) {
+          var kind = alert[1].toLowerCase();
+          var body = q.slice(1).join(" ");
+          html.push(
+            '<div class="adm"><b>' +
+              alert[1].charAt(0).toUpperCase() +
+              alert[1].slice(1).toLowerCase() +
+              "</b>" +
+              inline(body) +
+              "</div>"
+          );
+        } else {
+          html.push("<blockquote><p>" + inline(q.join(" ")) + "</p></blockquote>");
+        }
+        continue;
+      }
+
+      // table
+      if (/\|/.test(line) && i + 1 < lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(lines[i + 1])) {
+        var head = splitRow(line);
+        i += 2;
+        var rows = [];
+        while (i < lines.length && /\|/.test(lines[i]) && lines[i].trim()) {
+          rows.push(splitRow(lines[i]));
+          i++;
+        }
+        var t = "<table><thead><tr>";
+        head.forEach(function (c) {
+          t += "<th>" + inline(c) + "</th>";
+        });
+        t += "</tr></thead><tbody>";
+        rows.forEach(function (r) {
+          t += "<tr>";
+          r.forEach(function (c) {
+            t += "<td>" + inline(c) + "</td>";
+          });
+          t += "</tr>";
+        });
+        html.push(t + "</tbody></table>");
+        continue;
+      }
+
+      // lists (ul / ol / task)
+      if (/^\s*([-*+]|\d+\.)\s+/.test(line)) {
+        var ordered = /^\s*\d+\./.test(line);
+        var items = [];
+        while (i < lines.length && /^\s*([-*+]|\d+\.)\s+/.test(lines[i])) {
+          var content = lines[i].replace(/^\s*([-*+]|\d+\.)\s+/, "");
+          var task = content.match(/^\[([ xX])\]\s+(.*)$/);
+          if (task) {
+            items.push(
+              '<li style="list-style:none"><input type="checkbox" disabled' +
+                (task[1].toLowerCase() === "x" ? " checked" : "") +
+                "> " +
+                inline(task[2]) +
+                "</li>"
+            );
+          } else {
+            items.push("<li>" + inline(content) + "</li>");
+          }
+          i++;
+        }
+        html.push((ordered ? "<ol>" : "<ul>") + items.join("") + (ordered ? "</ol>" : "</ul>"));
+        continue;
+      }
+
+      // blank
+      if (!line.trim()) {
+        i++;
+        continue;
+      }
+
+      // paragraph
+      var p = [];
+      while (i < lines.length && lines[i].trim() && !isInlineStart(lines[i])) {
+        p.push(lines[i]);
+        i++;
+      }
+      if (p.length) {
+        html.push("<p>" + inline(p.join(" ")) + "</p>");
+      } else {
+        i++; // safety: never loop forever
+      }
+    }
+    return html.join("\n");
+  }
+
+  function splitRow(row) {
+    return row
+      .trim()
+      .replace(/^\||\|$/g, "")
+      .split("|")
+      .map(function (c) {
+        return c.trim();
+      });
+  }
+
+  function update() {
+    var md = input.value;
+    out.innerHTML = md.trim() ? render(md) : '<p class="pe">Nothing to preview yet — start typing!</p>';
+    var words = (md.match(/[\w'-]+/g) || []).length;
+    var mins = Math.max(1, Math.round(words / 200));
+    statsEl.textContent = words.toLocaleString() + " words · " + mins + " min read";
+  }
+
+  var timer = null;
+  input.addEventListener("input", function () {
+    statsEl.textContent = "rendering…";
+    clearTimeout(timer);
+    timer = setTimeout(update, 150);
+  });
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      var s = input.selectionStart,
+        en = input.selectionEnd;
+      input.value = input.value.slice(0, s) + "  " + input.value.slice(en);
+      input.selectionStart = input.selectionEnd = s + 2;
+      update();
+    }
+  });
+
+  input.value = SAMPLE;
+  update();
+})();
+</script>
+</body>
+</html>
