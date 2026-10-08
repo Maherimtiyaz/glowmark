@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" class="<!--GLOWMARK:THEME-->">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><!--GLOWMARK:TITLE--></title>
+<meta name="description" content="<!--GLOWMARK:DESCRIPTION-->">
+<meta property="og:title" content="<!--GLOWMARK:TITLE-->">
+<meta property="og:description" content="<!--GLOWMARK:DESCRIPTION-->">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+<script>
+  (function () {
+    try {
+      var pref = localStorage.getItem("glowmark-theme");
+      if (pref) document.documentElement.className = "theme-" + pref;
+    } catch (e) {}
+  })();
+</script>
+<style>
+/*GLOWMARK:STYLE*/
+</style>
+</head>
+<body>
+<div class="progress" id="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+<div class="toc-backdrop" id="tocBackdrop" aria-hidden="true"></div>
+<button class="toc-toggle" id="tocToggle" aria-label="Toggle table of contents">☰</button>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+  <span class="icon-sun">☀️</span><span class="icon-moon">🌙</span>
+</button>
+
+<aside class="toc" id="toc">
+  <div class="toc-title">Contents</div>
+  <nav><!--GLOWMARK:TOC--></nav>
+</aside>
+
+<main class="container">
+  <header class="hero">
+    <div class="eyebrow" <!--GLOWMARK:META_STYLE-->><!--GLOWMARK:META_LINE--></div>
+    <h1><!--GLOWMARK:HEADING--></h1>
+    <div class="stats">
+      <span>📖 <!--GLOWMARK:READING--></span>
+      <span>✍️ <!--GLOWMARK:WORDS--></span>
+    </div>
+  </header>
+
+  <article class="content" id="content">
+<!--GLOWMARK:BODY-->
+  </article>
+
+  <footer class="footer">
+    Rendered with <strong>glowmark</strong> ✨
+  </footer>
+</main>
+
+<button class="to-top" id="toTop" aria-label="Back to top">↑</button>
+
+<script>
+//GLOWMARK:JS
+</script>
+<!--GLOWMARK:LIVE_RELOAD-->
+</body>
+</html>
