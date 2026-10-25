@@ -128,7 +128,7 @@ h1 {
   box-shadow: var(--shadow);
 }
 .cmd .prompt { color: #22c55e; }
-.cmd code { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmd code { flex: 1; overflow-x: auto; white-space: nowrap; }
 .copy {
   border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
   color: #cbd5e1; font-size: .72rem; border-radius: 7px; padding: .3rem .6rem;
@@ -195,7 +195,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.3rem); letter-spacing: -.02em; margin: 0 
 .pane { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg-card); box-shadow: var(--shadow); }
 .pane-label { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: .6rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-soft); background: var(--bg-soft); display: flex; justify-content: space-between; }
 .pane-label .tag { color: var(--accent); }
-.raw { font-family: var(--font-mono); font-size: .8rem; line-height: 1.7; padding: 1.1rem 1.2rem; margin: 0; color: var(--text-soft); overflow-x: auto; white-space: pre-wrap; }
+.raw { font-family: var(--font-mono); font-size: .8rem; line-height: 1.7; padding: 1.1rem 1.2rem; margin: 0; color: var(--text-soft); overflow: auto; white-space: pre-wrap; max-height: 460px; }
 .raw .h { color: var(--accent); font-weight: 700; }
 .raw .b { color: var(--heading); font-weight: 700; }
 .raw .fence { color: #22c55e; }
@@ -217,6 +217,11 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.3rem); letter-spacing: -.02em; margin: 0 
 }
 @keyframes bounce-x { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.12); } }
 .split-wrap { position: relative; }
+.frame-pane { display: flex; flex-direction: column; }
+.frame-pane .pane-label { flex: 0 0 auto; }
+.real-frame { flex: 1; display: block; width: 100%; min-height: 460px; border: 0; background: var(--bg-card); }
+.pane-label a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--border); }
+.pane-label a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
 /* features ------------------------------------------------------------------- */
 .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr)); gap: 1.2rem; }
@@ -276,70 +281,6 @@ footer { border-top: 1px solid var(--border); padding: 2.2rem 0; margin-top: 4re
 .foot { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: center; }
 .foot a { color: var(--accent); text-decoration: none; }
 .foot a:hover { text-decoration: underline; }
-
-/* live demo ---------------------------------------------------------------- */
-.demo-input {
-  width: 100%;
-  min-height: 27rem;
-  border: none;
-  outline: none;
-  resize: vertical;
-  padding: 1.2rem 1.3rem;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  line-height: 1.7;
-  background: var(--bg);
-  color: var(--text);
-  tab-size: 2;
-}
-.demo-content {
-  min-height: 27rem;
-  max-height: 27rem;
-  overflow-y: auto;
-  font-size: 0.95rem;
-}
-.demo-content h1 { font-size: 1.55rem; margin: 0 0 0.6rem; color: var(--heading); letter-spacing: -0.02em; }
-.demo-content h2 { font-size: 1.2rem; margin: 1.3rem 0 0.5rem; color: var(--heading); padding-bottom: 0.25rem; border-bottom: 1px solid var(--border); }
-.demo-content h3 { font-size: 1.05rem; margin: 1.1rem 0 0.4rem; color: var(--heading); }
-.demo-content p { margin: 0.6rem 0; }
-.demo-content a { color: var(--accent); text-decoration: none; border-bottom: 1.5px solid var(--accent-soft); }
-.demo-content a:hover { border-bottom-color: var(--accent); }
-.demo-content ul, .demo-content ol { padding-left: 1.3rem; margin: 0.6rem 0; }
-.demo-content li { margin: 0.25rem 0; }
-.demo-content li::marker { color: var(--accent); }
-.demo-content code {
-  font-family: var(--font-mono); font-size: 0.85em;
-  background: var(--bg-soft); border: 1px solid var(--border);
-  border-radius: 6px; padding: 0.1em 0.4em;
-}
-.demo-content pre {
-  background: var(--bg-soft); border: 1px solid var(--border);
-  border-radius: 10px; padding: 0.9rem 1rem; overflow-x: auto;
-  margin: 0.9rem 0; box-shadow: none;
-}
-.demo-content pre code { background: none; border: none; padding: 0; font-size: 0.8rem; }
-.demo-content pre .k { color: var(--accent); font-weight: 600; }
-.demo-content pre .s { color: #16a34a; }
-.demo-content pre .c { color: var(--text-soft); font-style: italic; }
-.demo-content pre .n { color: #ec4899; }
-.demo-content table { border-collapse: collapse; width: 100%; margin: 0.9rem 0; font-size: 0.88rem; display: block; overflow-x: auto; }
-.demo-content th, .demo-content td { border: 1px solid var(--border); padding: 0.45rem 0.75rem; text-align: left; }
-.demo-content th { background: var(--bg-soft); color: var(--heading); }
-.demo-content blockquote {
-  margin: 0.9rem 0; padding: 0.1rem 1rem;
-  border-left: 4px solid var(--accent); background: var(--accent-soft);
-  border-radius: 0 10px 10px 0;
-}
-.demo-content .adm {
-  margin: 0.9rem 0; border: 1px solid var(--border);
-  border-left: 4px solid #16a34a; border-radius: 0 10px 10px 0;
-  background: var(--bg-soft); padding: 0.7rem 0.95rem;
-}
-.demo-content .adm b { display: block; color: var(--heading); font-size: 0.85rem; margin-bottom: 0.2rem; }
-.demo-content input[type="checkbox"] { accent-color: var(--accent); margin-right: 0.45rem; }
-.demo-content hr { border: none; border-top: 1px solid var(--border); margin: 1.4rem 0; }
-.demo-content img { max-width: 100%; border-radius: 10px; }
-.demo-content .pe { color: var(--text-soft); font-style: italic; }
 
 /* reveal animations ------------------------------------------------------------ */
 .reveal { opacity: 0; transform: translateY(20px); transition: opacity .65s cubic-bezier(.22,1,.36,1), transform .65s cubic-bezier(.22,1,.36,1); transition-delay: var(--d, 0s); }
@@ -402,8 +343,8 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
         syntax-highlighted, themed, with a live-reload preview server. Nothing to configure, nothing to share but one file.</p>
       <div class="cmd hero-anim d3">
         <span class="prompt">$</span>
-        <code id="installCmd">pip install glowmark</code>
-        <button class="copy" data-copy="pip install glowmark">copy</button>
+        <code id="installCmd">pip install "git+https://github.com/Maherimtiyaz/glowmark.git"</code>
+        <button class="copy" data-copy="pip install &quot;git+https://github.com/Maherimtiyaz/glowmark.git&quot;">copy</button>
       </div>
       <div class="cta-row hero-anim d4">
         <a class="btn primary" href="#install">Get started →</a>
@@ -421,22 +362,86 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 
 <section id="demo">
   <div class="wrap">
-    <p class="kicker reveal">Live demo — no install</p>
-    <h2 class="reveal">Try it right here. Really.</h2>
-    <p class="sub reveal">Type any markdown on the left — the exact glowmark rendering appears on the right,
-      computed entirely in your browser. Nothing is uploaded.</p>
+    <p class="kicker reveal">Real demo — no install</p>
+    <h2 class="reveal">Real output. No imitation.</h2>
+    <p class="sub reveal">The panel on the right is an actual standalone page generated by the
+      Python engine at build time — the same code path as <code>glowmark doc.md</code>.
+      It is not a JavaScript re-implementation.</p>
     <div class="split-wrap reveal">
       <div class="split">
         <div class="pane">
-          <div class="pane-label"><span>markdown</span><span class="tag">edit me ↓</span></div>
-          <textarea id="demoMd" class="demo-input" spellcheck="false" aria-label="Markdown input"></textarea>
+          <div class="pane-label"><span>demo.md</span><span class="tag">source</span></div>
+          <!--GLOWMARK:DEMO_SOURCE:START-->
+<pre class="raw">---
+title: glowmark, rendered
+author: glowmark
+date: October 2026
+description: A real page generated by the real glowmark engine.
+---
+
+# One file in. One beautiful page out.
+
+This page was generated by the **actual Python engine** at build time — the same
+code path as `glowmark doc.md`. There is no JavaScript imitation here.
+
+## Everything you need
+
+1. Point glowmark at a file.
+
+   ```bash
+   glowmark notes.md --out notes.html
+   ```
+
+2. Or keep a live preview open while you write.
+
+   ```bash
+   glowmark --serve notes.md
+   ```
+
+## GFM that behaves like GitHub
+
+| Feature | Supported | Notes |
+| --- | --- | --- |
+| Tables | ✅ | GFM pipe tables |
+| Task lists | ✅ | Real checkboxes |
+| Footnotes | ✅ | With backlinks |
+| Nested code | ✅ | Fences inside list items |
+
+- [x] CommonMark parsing
+- [x] GitHub-style alerts
+- [ ] Take over the world
+
+&gt; [!TIP]
+&gt; Edit the source file and run `glowmark --serve` — the browser refreshes
+&gt; itself. No build step, no account, no network for the core page.
+
+## Unicode is safe
+
+Em dash —, arrow →, μ-law, café, naïve, 東京, ✨. Bytes are decoded as UTF-8,
+with BOMs and CRLF handled before the renderer sees them.
+
+## Math and diagrams
+
+Inline math $e^{i\pi} + 1 = 0$ and a small diagram:
+
+```mermaid
+flowchart LR
+    A[Markdown] --&gt; B[glowmark]
+    B --&gt; C[One HTML file]
+```
+
+A footnote for the curious.[^1]
+
+[^1]: The standalone page inlines its CSS, JavaScript and syntax-highlighting
+    theme. Math (KaTeX) and mermaid load from a CDN only when detected.</pre>
+<!--GLOWMARK:DEMO_SOURCE:END-->
         </div>
-        <div class="pane">
-          <div class="pane-label"><span>✨ glowmark output</span><span class="tag" id="demoStats">…</span></div>
-          <div class="pretty demo-content" id="demoOut"></div>
+        <div class="pane frame-pane">
+          <div class="pane-label"><span>glowmark output</span><span class="tag"><a href="demo.html" target="_blank" rel="noopener">open full page ↗</a></span></div>
+          <iframe class="real-frame" src="demo.html" title="A real page rendered by glowmark" loading="lazy"></iframe>
         </div>
       </div>
-      <div class="arrow-badge">✨</div>
+      <div class="arrow-badge">→</div>
     </div>
   </div>
 </section>
@@ -446,37 +451,30 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
     <p class="kicker reveal">The one trick</p>
     <h2 class="reveal">Same file. Ten seconds. Night and day.</h2>
     <p class="sub reveal">Raw text nobody reads → a page with a gradient hero, scroll-spy table of contents,
-      highlighted code, copy buttons, and light/dark themes.</p>
+      highlighted code, copy buttons, and light/dark themes. Both panels below are generated from the same source.</p>
     <div class="split-wrap reveal">
       <div class="split">
         <div class="pane">
           <div class="pane-label"><span>README.md</span><span class="tag">raw</span></div>
-<pre class="raw"><span class="h"># Welcome to glowmark</span>
+          <!--GLOWMARK:COMPARE_SOURCE:START-->
+<pre class="raw"># Welcome to glowmark
 
-glowmark turns <span class="b">**one markdown file**</span> into a
-polished, standalone HTML page.
+glowmark turns **one markdown file** into a polished, standalone HTML page.
 
-<span class="fence">```python</span>
-<span class="code">print(Glow("glowmark").shine())</span>
-<span class="fence">```</span>
+```python
+print(Glow(&quot;glowmark&quot;).shine())
+```
 
-<span class="h">## Why?</span>
+## Why?
+
 - [x] Parse markdown
 - [x] Highlight code
 - [ ] Take over the world</pre>
+<!--GLOWMARK:COMPARE_SOURCE:END-->
         </div>
-        <div class="pane">
-          <div class="pane-label"><span>glowmark README.md</span><span class="tag">✨ rendered</span></div>
-          <div class="pretty">
-            <div class="meta">glowmark · 1 min read · 24 words</div>
-            <h3>Welcome to glowmark</h3>
-            <p>glowmark turns <strong>one markdown file</strong> into a polished, standalone HTML page.</p>
-            <pre><span class="k">print</span>(Glow(<span class="s">"glowmark"</span>).shine())</pre>
-            <p><strong>Why?</strong></p>
-            <p><span class="check">✓</span> Parse markdown<br>
-               <span class="check">✓</span> Highlight code<br>
-               <span class="check">✓</span> Take over the world</p>
-          </div>
+        <div class="pane frame-pane">
+          <div class="pane-label"><span>glowmark README.md</span><span class="tag"><a href="compare.html" target="_blank" rel="noopener">open full page ↗</a></span></div>
+          <iframe class="real-frame" src="compare.html" title="The comparison source rendered by glowmark" loading="lazy"></iframe>
         </div>
       </div>
       <div class="arrow-badge">→</div>
@@ -488,15 +486,15 @@ polished, standalone HTML page.
   <div class="wrap">
     <p class="kicker reveal">Features</p>
     <h2 class="reveal">Everything you'd build yourself. Already done.</h2>
-    <p class="sub reveal">One focused tool that does exactly one thing — exceptionally well.</p>
+    <p class="sub reveal">A focused tool that renders Markdown well — and stays out of your way.</p>
     <div class="features" id="featureGrid">
       <div class="card reveal"><span class="ico">⚡</span><h3>Instant preview</h3><p><code>glowmark doc.md</code> renders and opens in your browser. No server, no wait.</p></div>
       <div class="card reveal"><span class="ico">🔄</span><h3>Live reload</h3><p><code>--serve</code> watches your file and refreshes the browser the moment you save.</p></div>
-      <div class="card reveal"><span class="ico">📦</span><h3>One-file output</h3><p>CSS and highlighting fully inlined. Works offline, email it, host it anywhere.</p></div>
+      <div class="card reveal"><span class="ico">📦</span><h3>One-file output</h3><p>CSS, JavaScript and syntax highlighting are inlined. Core pages work offline; math and mermaid load from a CDN only when used.</p></div>
       <div class="card reveal"><span class="ico">🎨</span><h3>Light &amp; dark</h3><p>Auto-detect, manual toggle, circular theme transition. Choice is persisted.</p></div>
       <div class="card reveal"><span class="ico">🧭</span><h3>Scroll-spy TOC</h3><p>A sliding indicator follows you through the document as you read.</p></div>
       <div class="card reveal"><span class="ico">🔔</span><h3>GitHub alerts</h3><p><code>&gt; [!NOTE]</code>, tips and warnings render as native admonition cards.</p></div>
-      <div class="card reveal"><span class="ico">📊</span><h3>Math &amp; diagrams</h3><p>LaTeX via KaTeX and mermaid charts load automatically when detected.</p></div>
+      <div class="card reveal"><span class="ico">📊</span><h3>Math &amp; diagrams</h3><p>LaTeX via KaTeX and mermaid charts load from a CDN when detected — the only network calls glowmark makes.</p></div>
       <div class="card reveal"><span class="ico">🧾</span><h3>Front matter</h3><p>Title, author and date become a hero header — with reading time for free.</p></div>
     </div>
   </div>
@@ -514,8 +512,8 @@ polished, standalone HTML page.
     <div class="stats reveal" style="margin-top:3.5rem">
       <div class="stat"><b>1</b><span>command to render</span></div>
       <div class="stat"><b>0</b><span>config files</span></div>
-      <div class="stat"><b>2</b><span>dependencies</span></div>
-      <div class="stat"><b>100%</b><span>offline-ready output</span></div>
+      <div class="stat"><b>3</b><span>required packages</span></div>
+      <div class="stat"><b>100%</b><span>core assets inlined</span></div>
     </div>
   </div>
 </section>
@@ -525,11 +523,12 @@ polished, standalone HTML page.
     <div class="install reveal">
       <p class="kicker">Install</p>
       <h2>Ready in one line.</h2>
-      <p class="sub">Python 3.10+, no Node, no build step, no account.</p>
+      <p class="sub">Python 3.10+, no Node, no build step, no account. Not on PyPI yet —
+        install straight from GitHub.</p>
       <div class="cmd">
         <span class="prompt">$</span>
-        <code>pip install glowmark</code>
-        <button class="copy" data-copy="pip install glowmark">copy</button>
+        <code>pip install "git+https://github.com/Maherimtiyaz/glowmark.git"</code>
+        <button class="copy" data-copy="pip install &quot;git+https://github.com/Maherimtiyaz/glowmark.git&quot;">copy</button>
       </div>
       <div class="cmd" style="max-width:32rem">
         <span class="prompt">$</span>
@@ -561,6 +560,11 @@ polished, standalone HTML page.
   function applyTheme(next) {
     root.className = "theme-" + next;
     try { localStorage.setItem("glowmark-theme", next); } catch (e) {}
+    // The demo iframes are real glowmark pages; reload them so their own
+    // theme initialiser picks up the preference.
+    document.querySelectorAll("iframe.real-frame").forEach(function (frame) {
+      try { frame.contentWindow.location.reload(); } catch (e) {}
+    });
   }
   themeBtn.addEventListener("click", function () {
     var next = root.className.replace("theme-", "") === "light" ? "dark" : "light";
@@ -653,7 +657,7 @@ polished, standalone HTML page.
     ],
     [
       { t: '<span class="ps1">$</span> glowmark notes.md <span class="flag">--out</span> notes.html', d: 42 },
-      { t: '\n<span class="ok">wrote</span> notes.html <span class="dim">(49,122 bytes) — works offline</span>', d: 8, pause: 1800 }
+      { t: '\n<span class="ok">wrote</span> notes.html <span class="dim">(49,122 bytes) — self-contained core</span>', d: 8, pause: 1800 }
     ]
   ];
   var sceneIdx = 0;
@@ -724,260 +728,6 @@ polished, standalone HTML page.
   } else {
     setTimeout(loop, 700);
   }
-})();
-</script>
-<script>
-// live markdown demo (client-side renderer) -------------------------------
-(function () {
-  "use strict";
-  var input = document.getElementById("demoMd");
-  var out = document.getElementById("demoOut");
-  var statsEl = document.getElementById("demoStats");
-  if (!input || !out) return;
-
-  var SAMPLE = [
-    "# Hello, glowmark ✨",
-    "",
-    "Paste **any markdown** here — this preview uses the same styles as the CLI output, rendered *entirely in your browser*.",
-    "",
-    "## Why people love it",
-    "",
-    "- ⚡ Instant preview",
-    "- 🎨 Light & dark themes",
-    "- 📦 One-file output, works offline",
-    "",
-    "> [!TIP]",
-    "> Edit this text below, or paste your own README.",
-    "",
-    "| Command | What it does |",
-    "| ------- | ------------ |",
-    "| `glowmark doc.md` | quick preview |",
-    "| `glowmark -s doc.md` | live-reload server |",
-    "| `glowmark doc.md -o x.html` | standalone file |",
-    "",
-    "```python",
-    "from glowmark import render",
-    'page = render("# Hi")  # beautiful, instantly',
-    "```",
-    "",
-    "- [x] Rendered client-side",
-    "- [ ] Try it yourself",
-    "",
-    "---",
-    "",
-    "Reading time: *automatically calculated* ✍️",
-  ].join("\n");
-
-  function esc(s) {
-    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  }
-
-  function highlight(code) {
-    var KW =
-      "\\b(function|return|const|let|var|if|else|for|while|import|from|export|default|class|new|await|async|def|lambda|print|True|False|None|true|false|null|this|try|except|catch|raise|with|as|in|not|and|or|is|pass|yield|goto|end|do|then)\\b";
-    var re = new RegExp(
-      "(#[^\\n]*|\\/\\/[^\\n]*|--[^\\n]*)" + // comments
-        '|("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'|`(?:[^`\\\\]|\\\\.)*`)' + // strings
-        "|\\b(\\d+(?:\\.\\d+)?)\\b" + // numbers
-        "|" + KW,
-      "g"
-    );
-    return esc(code).replace(re, function (m, com, str, num, kw) {
-      if (com) return '<span class="c">' + com + "</span>";
-      if (str) return '<span class="s">' + str + "</span>";
-      if (num) return '<span class="n">' + num + "</span>";
-      if (kw) return '<span class="k">' + kw + "</span>";
-      return m;
-    });
-  }
-
-  function inline(text) {
-    var t = esc(text);
-    t = t.replace(/`([^`]+)`/g, function (m, c) {
-      return "<code>" + c + "</code>";
-    });
-    t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img alt="$1" src="$2">');
-    t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-    t = t.replace(/__([^_]+)__/g, "<strong>$1</strong>");
-    t = t.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
-    t = t.replace(/~~([^~]+)~~/g, "<del>$1</del>");
-    return t;
-  }
-
-  function render(md) {
-    var lines = md.replace(/\r\n?/g, "\n").split("\n");
-    var html = [], i = 0;
-
-    function isInlineStart(l) {
-      return /^(#{1,6}\s|>|\s*[-*+]\s|\s*\d+\.\s|```|---\s*$|\s*$)/.test(l);
-    }
-
-    while (i < lines.length) {
-      var line = lines[i];
-
-      // fenced code
-      var fence = line.match(/^\s*```(\w*)\s*$/);
-      if (fence) {
-        var buf = [];
-        i++;
-        while (i < lines.length && !/^\s*```\s*$/.test(lines[i])) {
-          buf.push(lines[i]);
-          i++;
-        }
-        i++;
-        html.push("<pre><code>" + highlight(buf.join("\n")) + "</code></pre>");
-        continue;
-      }
-
-      // heading
-      var h = line.match(/^(#{1,6})\s+(.*)$/);
-      if (h) {
-        var lvl = h[1].length;
-        html.push("<h" + lvl + ">" + inline(h[2]) + "</h" + lvl + ">");
-        i++;
-        continue;
-      }
-
-      // hr
-      if (/^\s*([-*_])\s*(\1\s*){2,}$/.test(line)) {
-        html.push("<hr>");
-        i++;
-        continue;
-      }
-
-      // blockquote / alert
-      if (/^\s*>/.test(line)) {
-        var q = [];
-        while (i < lines.length && /^\s*>/.test(lines[i])) {
-          q.push(lines[i].replace(/^\s*>\s?/, ""));
-          i++;
-        }
-        var alert = q[0] && q[0].match(/^\[!(\w+)\]\s*$/i);
-        if (alert) {
-          var kind = alert[1].toLowerCase();
-          var body = q.slice(1).join(" ");
-          html.push(
-            '<div class="adm"><b>' +
-              alert[1].charAt(0).toUpperCase() +
-              alert[1].slice(1).toLowerCase() +
-              "</b>" +
-              inline(body) +
-              "</div>"
-          );
-        } else {
-          html.push("<blockquote><p>" + inline(q.join(" ")) + "</p></blockquote>");
-        }
-        continue;
-      }
-
-      // table
-      if (/\|/.test(line) && i + 1 < lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(lines[i + 1])) {
-        var head = splitRow(line);
-        i += 2;
-        var rows = [];
-        while (i < lines.length && /\|/.test(lines[i]) && lines[i].trim()) {
-          rows.push(splitRow(lines[i]));
-          i++;
-        }
-        var t = "<table><thead><tr>";
-        head.forEach(function (c) {
-          t += "<th>" + inline(c) + "</th>";
-        });
-        t += "</tr></thead><tbody>";
-        rows.forEach(function (r) {
-          t += "<tr>";
-          r.forEach(function (c) {
-            t += "<td>" + inline(c) + "</td>";
-          });
-          t += "</tr>";
-        });
-        html.push(t + "</tbody></table>");
-        continue;
-      }
-
-      // lists (ul / ol / task)
-      if (/^\s*([-*+]|\d+\.)\s+/.test(line)) {
-        var ordered = /^\s*\d+\./.test(line);
-        var items = [];
-        while (i < lines.length && /^\s*([-*+]|\d+\.)\s+/.test(lines[i])) {
-          var content = lines[i].replace(/^\s*([-*+]|\d+\.)\s+/, "");
-          var task = content.match(/^\[([ xX])\]\s+(.*)$/);
-          if (task) {
-            items.push(
-              '<li style="list-style:none"><input type="checkbox" disabled' +
-                (task[1].toLowerCase() === "x" ? " checked" : "") +
-                "> " +
-                inline(task[2]) +
-                "</li>"
-            );
-          } else {
-            items.push("<li>" + inline(content) + "</li>");
-          }
-          i++;
-        }
-        html.push((ordered ? "<ol>" : "<ul>") + items.join("") + (ordered ? "</ol>" : "</ul>"));
-        continue;
-      }
-
-      // blank
-      if (!line.trim()) {
-        i++;
-        continue;
-      }
-
-      // paragraph
-      var p = [];
-      while (i < lines.length && lines[i].trim() && !isInlineStart(lines[i])) {
-        p.push(lines[i]);
-        i++;
-      }
-      if (p.length) {
-        html.push("<p>" + inline(p.join(" ")) + "</p>");
-      } else {
-        i++; // safety: never loop forever
-      }
-    }
-    return html.join("\n");
-  }
-
-  function splitRow(row) {
-    return row
-      .trim()
-      .replace(/^\||\|$/g, "")
-      .split("|")
-      .map(function (c) {
-        return c.trim();
-      });
-  }
-
-  function update() {
-    var md = input.value;
-    out.innerHTML = md.trim() ? render(md) : '<p class="pe">Nothing to preview yet — start typing!</p>';
-    var words = (md.match(/[\w'-]+/g) || []).length;
-    var mins = Math.max(1, Math.round(words / 200));
-    statsEl.textContent = words.toLocaleString() + " words · " + mins + " min read";
-  }
-
-  var timer = null;
-  input.addEventListener("input", function () {
-    statsEl.textContent = "rendering…";
-    clearTimeout(timer);
-    timer = setTimeout(update, 150);
-  });
-  input.addEventListener("keydown", function (e) {
-    if (e.key === "Tab") {
-      e.preventDefault();
-      var s = input.selectionStart,
-        en = input.selectionEnd;
-      input.value = input.value.slice(0, s) + "  " + input.value.slice(en);
-      input.selectionStart = input.selectionEnd = s + 2;
-      update();
-    }
-  });
-
-  input.value = SAMPLE;
-  update();
 })();
 </script>
 </body>
