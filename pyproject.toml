@@ -9,10 +9,12 @@ description = "Turn Markdown into a beautiful, standalone HTML page."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+# Pinned so golden snapshots and the generated landing pages stay byte-identical
+# across CI runs. Bump deliberately, then regenerate with scripts/build_site.py.
 dependencies = [
-    "markdown-it-py>=3.0",
-    "mdit-py-plugins>=0.4",
-    "pygments>=2.17",
+    "markdown-it-py==4.2.0",
+    "mdit-py-plugins==0.6.1",
+    "pygments==2.21.0",
 ]
 [project.optional-dependencies]
 watch = ["watchdog>=3.0"]
