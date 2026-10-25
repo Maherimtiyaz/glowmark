@@ -1,0 +1,109 @@
+<!-- title: Kitchen Sink — glowmark -->
+<!-- words: 101 -->
+<!-- code_words: 25 -->
+<!-- minutes: 1 -->
+<!-- warnings: 0 -->
+<!-- toc -->
+<ul><li><a href="#nested-lists-and-code">Nested lists and code</a></li><li><a href="#tables">Tables</a></li><li><a href="#tasks">Tasks</a></li><li><a href="#alerts">Alerts</a></li><li><a href="#quotes-and-escapes">Quotes and escapes</a></li><li><a href="#footnotes">Footnotes</a></li><li><a href="#math-and-diagrams">Math and diagrams</a></li><li><a href="#duplicate-headings">Duplicate headings</a><ul><li><a href="#repeated">Repeated</a></li><li><a href="#repeated-1">Repeated</a></li></ul></li><li><a href="#last-section">Last section</a></li></ul>
+<!-- body -->
+<h1 id="kitchen-sink">Kitchen Sink</h1>
+<p>Intro with non-ASCII: em dash —, arrow →, micro μ-law, café, naïve, 東京, ✨.</p>
+<h2 id="nested-lists-and-code">Nested lists and code</h2>
+<ol>
+<li>
+<p>Connect the service.</p>
+<pre class="highlight"><code><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;straight quotes stay straight&quot;</span>
+</code></pre>
+</li>
+<li>
+<p>Add a webhook.</p>
+<ul>
+<li>
+<p>Nested bullet</p>
+<pre class="highlight"><code><span class="kd">const</span><span class="w"> </span><span class="nx">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w"> </span><span class="c1">// nested fence</span>
+</code></pre>
+</li>
+</ul>
+</li>
+<li>
+<p>Done.</p>
+</li>
+</ol>
+<h2 id="tables">Tables</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Command</th>
+<th>Works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preview</td>
+<td><code>glowmark doc.md</code></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Export</td>
+<td><code>glowmark doc.md -o page.html</code></td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tasks">Tasks</h2>
+<ul class="contains-task-list">
+<li class="task-list-item enabled"><input class="task-list-item-checkbox" checked="checked"  type="checkbox"> Parse markdown</li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox"  type="checkbox"> Take over the world</li>
+</ul>
+<h2 id="alerts">Alerts</h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Useful information.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Helpful advice.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Be careful.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Important.</p>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Caution.</p>
+</div>
+<h2 id="quotes-and-escapes">Quotes and escapes</h2>
+<blockquote>
+<p>A plain blockquote.</p>
+</blockquote>
+<p>Escaped: *not emphasis*, _not emphasis_, &amp; ampersand.</p>
+<h2 id="footnotes">Footnotes</h2>
+<p>A footnote reference.<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup></p>
+<h2 id="math-and-diagrams">Math and diagrams</h2>
+<p>Inline math $e^{i\pi} + 1 = 0$.</p>
+<p>$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$</p>
+<div class="mermaid">
+flowchart LR
+    A[Markdown] --&gt; B[HTML]
+
+</div>
+<h2 id="duplicate-headings">Duplicate headings</h2>
+<h3 id="repeated">Repeated</h3>
+<h3 id="repeated-1">Repeated</h3>
+<h2 id="last-section">Last section</h2>
+<p>Strikethrough <s>gone</s> and a <a href="https://example.com">link</a>.</p>
+<hr class="footnotes-sep" />
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>The footnote body with <strong>markdown</strong>. <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
