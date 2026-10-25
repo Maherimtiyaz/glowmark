@@ -72,7 +72,11 @@ def build_handler(theme: str, title: str | None, seed: str | None):
                 data = json.loads(self.rfile.read(length))
                 markdown_text = data.get("md", "")
                 full = bool(data.get("full"))
-                doc = render_text(markdown_text, default_title="Untitled")
+                doc = render_text(
+                    markdown_text,
+                    default_title="Untitled",
+                    title_override=title,
+                )
                 if full:
                     payload = {
                         "html": render_page(
@@ -80,7 +84,6 @@ def build_handler(theme: str, title: str | None, seed: str | None):
                             css=css,
                             js=js,
                             code_css=code_css,
-                            site_title=title,
                             theme=theme,
                         )
                     }
@@ -89,7 +92,9 @@ def build_handler(theme: str, title: str | None, seed: str | None):
                         "body": doc.body_html,
                         "title": doc.title,
                         "words": doc.word_count,
+                        "code_words": doc.code_word_count,
                         "minutes": doc.reading_minutes,
+                        "warnings": doc.warnings,
                     }
                 body = json.dumps(payload).encode("utf-8")
                 self._send(200, body, "application/json; charset=utf-8")

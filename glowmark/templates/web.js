@@ -139,7 +139,7 @@
         URL.revokeObjectURL(a.href);
       }, 1000);
       flash(btn, "saved!");
-      stats.textContent = "standalone page downloaded — works offline";
+      stats.textContent = "standalone page downloaded";
     });
   });
 

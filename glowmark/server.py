@@ -13,6 +13,7 @@ from .render import (
     render_page,
     render_text,
 )
+from .source import read_file
 
 
 class ReloadHub:
@@ -52,14 +53,22 @@ def build_handler(source_path: Path, theme: str, title: str | None, hub: ReloadH
         def do_GET(self) -> None:  # noqa: N802
             path = self.path.split("?", 1)[0]
             if path in ("/", "/index.html"):
-                text = source_path.read_text(encoding="utf-8")
-                doc = render_text(text, default_title=source_path.stem)
+                try:
+                    source = read_file(source_path)
+                except OSError as exc:
+                    self._send(500, f"Could not read file: {exc}".encode(), "text/plain; charset=utf-8")
+                    return
+                doc = render_text(
+                    source.text,
+                    default_title=source_path.stem,
+                    title_override=title,
+                    input_warnings=source.warnings,
+                )
                 html = render_page(
                     doc,
                     css=css,
                     js=js,
                     code_css=code_css,
-                    site_title=title,
                     theme=theme,
                     live_reload=True,
                 )
@@ -78,7 +87,10 @@ def build_handler(source_path: Path, theme: str, title: str | None, hub: ReloadH
             version = hub.version
             try:
                 while True:
-                    version = hub.wait(version, timeout=15.0)
+                    new_version = hub.wait(version, timeout=15.0)
+                    if new_version == version:
+                        continue
+                    version = new_version
                     self.wfile.write(b"data: reload\n\n")
                     self.wfile.flush()
             except (BrokenPipeError, ConnectionResetError, OSError):

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from . import __version__
 from .render import codehilite_css, load_assets, render_page, render_text
+from .source import SourceText, read_file, read_stdin
 
 DEFAULT_PORT = 7654
 
@@ -59,19 +60,34 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def read_source(file_arg: str) -> tuple[str, str]:
-    """Return (markdown_text, default_title)."""
+def read_source(file_arg: str) -> tuple[SourceText, str]:
+    """Return (decoded source, default title from the filename)."""
     if file_arg == "-":
-        return sys.stdin.read(), "stdin"
+        return read_stdin(), ""
     path = Path(file_arg)
     if not path.exists():
         sys.exit(f"glowmark: file not found: {file_arg}")
     if path.is_dir():
         sys.exit(f"glowmark: expected a file, got a directory: {file_arg}")
-    return path.read_text(encoding="utf-8", errors="replace"), path.stem
+    try:
+        return read_file(path), path.stem
+    except OSError as exc:
+        sys.exit(f"glowmark: could not read {file_arg}: {exc}")
+
+
+def _warn(warnings: tuple[str, ...] | list[str]) -> None:
+    for warning in warnings:
+        print(f"glowmark: warning: {warning}", file=sys.stderr)
+
+
+def _write_utf8(path: Path, text: str) -> int:
+    data = text.encode("utf-8")
+    path.write_bytes(data)
+    return len(data)
 
 
 def main(argv: list[str] | None = None) -> None:
+    _configure_stdio()
     parser = build_parser()
     args = parser.parse_args(argv)
 
@@ -86,27 +102,32 @@ def main(argv: list[str] | None = None) -> None:
     if args.web:
         return _web(args)
 
-    text, default_title = read_source(args.file)
-    doc = render_text(text, default_title=default_title)
+    source, default_title = read_source(args.file)
+    _warn(source.warnings)
+    doc = render_text(
+        source.text,
+        default_title=default_title,
+        title_override=args.title,
+        input_warnings=source.warnings,
+    )
     css, js = load_assets()
     html = render_page(
         doc,
         css=css,
         js=js,
         code_css=codehilite_css(),
-        site_title=args.title,
         theme=args.theme,
     )
 
     if args.out:
         out_path = Path(args.out)
-        out_path.write_text(html, encoding="utf-8")
-        print(f"wrote {out_path}  ({len(html):,} bytes)")
+        size = _write_utf8(out_path, html)
+        print(f"wrote {out_path}  ({size:,} bytes, UTF-8)")
         return
 
     tmp = Path(tempfile.gettempdir()) / f"glowmark-{_slug(doc.title)}.html"
-    tmp.write_text(html, encoding="utf-8")
-    print(f"preview: {tmp}")
+    size = _write_utf8(tmp, html)
+    print(f"preview: {tmp}  ({size:,} bytes, UTF-8)")
     if not args.no_open:
         webbrowser.open(tmp.as_uri())
 
@@ -143,9 +164,11 @@ def _web(args: argparse.Namespace) -> None:
     seed = None
     if args.file is not None:
         if args.file == "-":
-            seed = sys.stdin.read()
+            seed_source = read_stdin()
         else:
-            seed, _ = read_source(args.file)
+            seed_source, _ = read_source(args.file)
+        _warn(seed_source.warnings)
+        seed = seed_source.text
 
     httpd = serve_web(seed=seed, port=args.port, theme=args.theme, title=args.title)
     url = f"http://127.0.0.1:{args.port}/"
@@ -161,8 +184,17 @@ def _web(args: argparse.Namespace) -> None:
         httpd.server_close()
 
 
+def _configure_stdio() -> None:
+    """Avoid UnicodeEncodeError when printing paths on legacy consoles."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="replace")  # type: ignore[attr-defined]
+        except (AttributeError, ValueError):
+            pass
+
+
 def _slug(title: str) -> str:
-    slug = "".join(c.lower() if c.isalnum() else "-" for c in title)
+    slug = "".join(c.lower() if c.isascii() and c.isalnum() else "-" for c in title)
     return "-".join(filter(None, slug.split("-")))[:40] or "doc"
 
 
